@@ -20,11 +20,8 @@ public struct Issue : Codable {
         case urlString = "self"
         case fields
     }
-    
-    
-    
+
     public struct Fields : Codable {
-        
         public let epic: String?
         public var summary: String
         public var fixVersions: [FixVersion]?
@@ -32,8 +29,14 @@ public struct Issue : Codable {
         public var description : String?
         public let status: IssueStatus
         public let created: Date
-        
-        enum CodingKeys : String, CodingKey {
+
+        private let extraFields: [String: CodableCollection]
+
+        func customField(name: String) -> Any? {
+            extraFields[name]?.value
+        }
+
+        enum CodingKeys : String, CaseIterable, CodingKey {
             case epic = "customfield_10017"
             case summary
             case fixVersions
@@ -41,6 +44,32 @@ public struct Issue : Codable {
             case description
             case status
             case created //"created": "2019-08-28T09:42:49.091-0500",
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: Issue.Fields.CodingKeys.self)
+            self.epic = try container.decodeIfPresent(String.self, forKey: Issue.Fields.CodingKeys.epic)
+            self.summary = try container.decode(String.self, forKey: Issue.Fields.CodingKeys.summary)
+            self.fixVersions = try container.decodeIfPresent([Issue.FixVersion].self, forKey: Issue.Fields.CodingKeys.fixVersions)
+            self.assignee = try container.decodeIfPresent(Assignee.self, forKey: Issue.Fields.CodingKeys.assignee)
+            self.description = try container.decodeIfPresent(String.self, forKey: Issue.Fields.CodingKeys.description)
+            self.status = try container.decode(Issue.IssueStatus.self, forKey: Issue.Fields.CodingKeys.status)
+            self.created = try container.decode(Date.self, forKey: Issue.Fields.CodingKeys.created)
+
+            let collection = try CodableCollection(from: decoder)
+            guard case .dictionary(var extraFields) = collection else {
+                throw DecodingError.dataCorrupted(.init(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Couldn't decode extra fields"
+                ))
+            }
+
+            // Strip values that we already explicitly decoded above
+            for key in CodingKeys.allCases {
+                extraFields.removeValue(forKey: key.rawValue)
+            }
+
+            self.extraFields = extraFields
         }
     }
     
