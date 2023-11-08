@@ -32,7 +32,7 @@ public struct Issue : Codable {
 
         private let extraFields: [String: CodableCollection]
 
-        func customField(name: String) -> Any? {
+        public func customField(name: String) -> Any? {
             extraFields[name]?.value
         }
 
