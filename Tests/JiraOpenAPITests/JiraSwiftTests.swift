@@ -1,6 +1,6 @@
 import XCTest
 
-@testable import JiraSwift
+@testable import JiraOpenAPI
 
 class JiraSwiftTests: XCTestCase {
 }

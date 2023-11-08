@@ -18,20 +18,23 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-openapi-urlsession", .upToNextMinor(from: "0.3.0")),
     ],
     targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "JiraOpenAPI",
             dependencies: [
-                .product(
-                    name: "OpenAPIRuntime",
-                    package: "swift-openapi-runtime"
-                ),
+                "JiraOpenAPIClient",
                 .product(
                     name: "OpenAPIURLSession",
                     package: "swift-openapi-urlsession"
                 ),
-            ],
+                .product(
+                    name: "OpenAPIRuntime",
+                    package: "swift-openapi-runtime"
+                ),
+            ]
+        ),
+        .target(
+            name: "JiraOpenAPIClient",
+            dependencies: [],
             plugins: [
                 .plugin(
                     name: "OpenAPIGenerator",
@@ -40,7 +43,7 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "JiraSwiftTests",
-            dependencies: ["JiraOpenAPI"]),
+            name: "JiraOpenAPITests",
+            dependencies: ["JiraOpenAPI", "JiraOpenAPIClient"]),
     ]
 )
